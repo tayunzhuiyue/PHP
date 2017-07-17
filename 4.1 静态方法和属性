@@ -17,5 +17,43 @@
         简单来说一切不需要实例化就可以确定行为的函数都可以设计成静态成员，当然也要根据实际开发项目的需要。但是必须记住的是静态成员只能被类调用，静态函数里面不能存在非静态的成员。
 
 
-4.2 常量
-  测试
+4.2 常量属性（类常量）
+  常量已经定义就不能在进行改变，他们是公共的，可静态访问的。而且常量只能包含一些基本的数据类型，不能将一个对象指派给常量。
+  定义常量：const AVAILABLE = 0;
+            product::AVAILABLE; 
+
+
+4.3 抽象类
+   定义：
+        abstract class shopProductWrite(){
+             protected $product = array();
+
+             abstract public function write();
+        }
+
+        class textShopProductWrite extends{
+             public function write(){
+               echo 123;
+             }
+        }
+   抽象类的优势：既然是抽象类的优势当然就是相对普通类来说的。首先抽象类不能实例化，而且不能实现其抽象方法。比如在有些情况下，我们需要抽离出一个父类，但是这个父类的某些方法又不知道如何实现，此时定义一个抽象类是非常合适。如果定义一个普通类我们在父类里实现的方法江北子类覆盖，这样实现这些方法的意义也不是很大。
+   
+   注意事项：抽象类至少抱一个抽象方法，子类里必须实现父类的所有抽象方法，子类实现的方法的访问控制不能大于父类的访问控制(public>protected>private)。
+
+4.4 接口
+   定义：
+      interface chargeable{
+        public function getPrice();
+      }
+      interface bookable{
+        public function getPrice();
+      }    
+       
+      class textShopProductWrite extends  shopProductWrite implements chargeable,bookable{
+
+      }
+
+    接口的优势： 
+    
+4.5 延迟静态绑定：static关键字  
+    静态方法可以作为工厂方法
