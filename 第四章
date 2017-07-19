@@ -101,4 +101,41 @@
       }
 
   print_r(b::creat()); 输出结果：a Object ( ) ;
-  这里产生的问题就是如果一个类继承了此类，然后想用此方法生成一个本类的对象就会出现问题。这里的self被解析为定义create()的类，而不是调用cretate()的类。而新的关键字static则很好的解决了这一问题。不仅如此static还可以像parent和self一样作为调用静态方法的标识符。     
+  这里产生的问题就是如果一个类继承了此类，然后想用此方法生成一个本类的对象就会出现问题。这里的self被解析为定义create()的类，而不是调用cretate()的类。而新的关键字static则很好的解决了这一问题。不仅如此static还可以像parent和self一样作为调用静态方法的标识符。
+
+
+4.6 错误处理
+  php的错误处理机制更多的是利用内置的Exception类进行处理，对于一些特殊需求的开发人员来说可能会通过继承Exception类去开发更加有利于处理程序错误的专一类。其中Exception类内置的几个重要的方法如下：
+  getMessage()  获得传递给构造方法的字符串
+  getCode()     获得传递给构造方法的错误代码
+  getFile()     获得产生错误的文件
+  getLine()     获得生成异常的行号
+  getPrevious() 获得一个嵌套的异常对象
+  getTrace()    获得一个多维数组，此数组记录产生错误的方法、类、文件和参数数据
+  getTraceAsString() 将getTrace()获得的值转化成字符串
+  __toString()       返回一个描述异常细节的字符串
+
+  example：class XmlException extends Exception{//具体扩展细节不详细展出，开发时可根据项目需求就行扩展}
+           class FileException extends Exception{}
+           class ConfException extends Exception{}
+
+           class A {
+             public function init(){
+                try{
+                    //业务代码省略
+                }catch(XmlException $e){
+                    //捕获到错误之后可进行处理 throw $e,retrun,
+                }catch(FileException $e){
+                
+                }catch(ConfException $e){
+                
+                }catch(Exception $e){
+                
+                }
+             }
+           }
+
+4.7 Final类和Final方法
+  关于final关键字用的地方确实不多，对于面向对象编程来说使用final会大大降低代码的灵活性，但是在某些特殊情况下，如果确定没写类确实不让继承某些方法确实不允许重写，还是可以使用final的，但是我们使用时还是尽量谨慎些。
+
+4.8            
