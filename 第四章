@@ -138,4 +138,138 @@
 4.7 Final类和Final方法
   关于final关键字用的地方确实不多，对于面向对象编程来说使用final会大大降低代码的灵活性，但是在某些特殊情况下，如果确定没写类确实不让继承某些方法确实不允许重写，还是可以使用final的，但是我们使用时还是尽量谨慎些。
 
-4.8            
+4.8 拦截器  
+  php的拦截器大概有这么几个：
+    __get($property)           访问未定义的属性时调用
+    __set($property,$value)    给未定义的属性赋值时调用
+    __isset($property)         给未定义的属性调用isset()方法时调用
+    __unset($property)         给未定义的属性调用unset()时调用
+    __call($method,array args) 调用未定义的方法时调用
+
+  在进行错误处理时有了拦截器我们可以很好的处理这些错误，或者给客户端程序员很清晰的提示信息。
+  委托：一个对象转发或委托一个请求给另外一个对象，被委托的对象替原来的对象处理请求。
+  优势：能够很方便的实现显示业务，用少量的代码完成功能需求。
+  使用__call()方法能很方便的委托，但是整个程序框架来说，大量使用委托对于别人理解你的程序将会是一个难题，委托的使用将请求在不同的类中跳来跳去，造成业务逻辑的不清晰，不易理解，所以当我们要使用委托时一定慎重，而且一定要写明注释。
+
+4.9 析构方法
+   __destruct()与__construct()方法对应，当一个对象从内存中删除时，它将会被调用。
+
+4.10 __clone()
+   php5之后所有的对象复制都是采用引用复制，即多个对象同时指向一个对象。但是在实际的开发中我们可能希望采用值方式的复制方式。
+   $obj2 = clone $obj1; 这样就是实现了值方式的复制效果
+   当我们使用clone关键字进行复制对象时，会自动调用__clone()方法。我们可以在__clone()中对对象做一些必要的处理。
+   explame:
+	  class Account{
+	  	public $balance;
+	  	function __construct($balance){
+	      $this->balance = $balance;
+	  	}
+
+	  }
+	  class Person{
+	  	private $name;
+	  	private $age;
+	  	private $id;
+	  	public $account;
+
+	  	function __construct($name,$age,Account $account){
+	  		$this->name = $name;
+	  		$this->age = $age;
+	  		$this->account = $account;
+	  	}
+
+	  	function setId($id){
+	  		$this->id = $id;
+	  	}
+
+	  	function __clone(){
+	  		$this->id = 0;
+	  		$this->account = clone $this->account;
+	  	}
+	  }
+
+	  $person = new Person('bob',44,new Account(233));
+	  $person->setId(255);
+	  $person2 = clone $person;
+
+	  $person->account->balance += 10;
+
+	  var_dump($person);
+	  echo "<br>";
+	  var_dump($person2); 
+
+4.11 定义对象的字符串值。__toString();
+    当把对象传递给print或echo时会自动调用这个方法。
+    对于日志或错误报告来说__toString将非常有用。也可以设计为专门传递消息的类。
+
+4.12 回调、匿名函数、闭包
+    匿名函数定义和使用：$fun = function(){ echo  '123'; }; $fun();    
+    上面只是它的简单使用，匿名函数更多的用处是在回调中使用。
+    example: 
+      class product{
+          public $name;
+          public $price;
+          public function __construct($name,$price){
+               $this->name = $name;
+               $this->price = $price;
+          }
+      }
+
+      class process {
+          private $callbacks;
+
+          public function setCallBack($callback){
+             if(!is_callable($callback)){
+                throw new Exception ('callback not callable');
+             }
+             $this->callbacks[] = $callback;
+          }
+
+          public function sale($product){
+             foreach($this->callbacks as $val){
+                 call_user_func($val,$product);
+             }
+          }
+      }
+
+      $log = function ($product){
+	  	print " loging $product->name : $product->price \n";
+	  };
+
+	  $process = new process();
+	  $process->setCallBack($log);
+	  $process->sale(new product('shoes',10));
+
+	is_callable() 检测传递的值是否可以作为回调函数的参数使用。
+	上面的匿名函数是用内链方式使用function关键字构成的，除此之外匿名函数还可以使用对象的引用和方法。
+	(1):class a {
+          public function b ($profuct){
+             print "loging $product->name : $product->price \n";
+          }
+	    } 
+	    $process = new process();
+	    $process->setCallBack(array(new a(),'b'));
+	(2):class a {
+	      public static function b(){
+             return function ($product){
+               print " loging $prduct->name:$product->price\n";
+             };
+	      }
+	    }
+	    $process = new process();
+	    $process->setCallBack(a::b());  
+
+	对于匿名函数来说还有一个特性，他可以继承父作用域的变量。（父作用域：定义匿名函数的函数）  
+	    class a {
+	      public static function b($amt){
+	         $count = 0;
+             return function ($product) use ($amt,&$count){
+               $count += $product->price;
+               print " loging $prduct->name:$product->price\n";
+               if($count > $amt){
+                 print "high price $count";
+               }
+             };
+	      }
+	    }  
+
