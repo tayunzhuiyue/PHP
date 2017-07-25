@@ -1,56 +1,141 @@
 5.1 php包和命名空间，自动加载
-   包的概念其实就是很多个类的一个集合，就好比我们某一个目录，这个目录可能包含很多的.php文件，只不过同一个包下面的类库具有相同的或相似的特性。
-   当我们开发大型应用程序的时候，我们可能会建立很多的类，也可能会引用到第三方的类库包。那么可能就会出现类名重复的问题啦！
-   ex://my.php
-      require_once 'userful/a.php';
-      class output{}
+  包的概念：
+       包的概念其实就是很多个类的一个集合，就好比我们某一个目录，这个目录可能包含很多的.php文件，只不过一般来说同一个包下面的类库都具有相同的或相似的特性。（自我感觉就是归类，方面使用，方面阅读）
+       当我们开发大型应用程序的时候，我们可能会建立很多的类，也可能会引用到第三方的类库包。那么可能就会出现类名重复的问题！
+       ex://my.php
+          require_once 'userful/a.php';
+          class output{}
 
-      //userful a.php
-      class output{}
+          //userful a.php
+          class output{}
 
-      //error notice
-      Fatal error: Cannot redeclare class output in E:\wnmp\www\localhost\demon-php\test\a.php on line 2
+          //error notice
+          Fatal error: Cannot redeclare class output in E:\wnmp\www\localhost\demon-php\test\a.php on line 2
 
-    从php5.3开始，php出现了命名空间的概念，这个特性很好的解决了上面我们出现的问题。
-    概念：命名空间就是一个容器，你可以将类，函数，变量放在其中。
-    ex: namespace my;
-        require_once 'userful/output.php';
-        class output{}
+        从php5.3开始，php出现了命名空间的概念，这个特性很好的解决了上面我们出现的问题。
+  命名空间概念：命名空间就是一个容器，你可以将类，函数，变量放在其中。
+        ex: namespace my;
+            require_once 'userful/output.php';
+            class output{}
 
-        namespace userful;
-        class output{}
+            namespace userful;
+            class output{}
 
-    嵌套命名空间： namespace com\getinstance\util;
-                   class a{
-                    static public function b{
-                       echo 'a';
-                     }
-                   } 
+        嵌套命名空间： namespace com\getinstance\util;
+                       class a{
+                        static public function b{
+                           echo 'a class';
+                         }
+                       } 
 
-    如果我们在命名空间内部使用该类可直接调用：b::a();
-    如果需要在外部引用该类，需要使用use关键字先引入该类或者使用全称使用。
-    //my.php
-    namespace my;
-    class c{
-      function d{
-        com\getinstance\util\a::b();//这种使用相对命名空间的方式将会导致查找不到a类，相对路径的方式会从my空间开始寻找com\getinstance\util\a
+        在命名空间内部使用该类可直接调用：a::b();
+        如果需要在外部引用该类，需要使用全称。
+        //my.php
+        namespace my;
+        class c{
+          function d{
+            //错误的调用方式
+            com\getinstance\util\a::b();//这种使用相对命名空间的方式将会导致查找不到a类，相对路径的方式会从my空间开始寻找com\getinstance\util\a
 
-        \com\getinstance\util\a::b() // 正确的调用方式，加一'/'，采用绝对路径，从全局开始寻找com\getinstance\util\a
+            \com\getinstance\util\a::b() // 正确的调用方式，加一'/'，采用绝对路径，从全局开始寻找com\getinstance\util\a
+          }
+        }
+        这个地方不得不说一下，刚开始我使用tp5的时候由于对概念不清晰出现的一个小bug：
+        namespace app\console\controller;
+        class b extends think\Controller{}
+        报错之后自己还是很疑惑这怎么可能，然后看公司其他人的代码class b extends \think\Controller{}然后也没多想，就直接改成一样bug就解决了，当时也没仔细想这个问题，现在突然发现工作中的任何一个bug都是自己没有掌握的一个知识点，看来以后还是要多用点心呀。
+  use关键字：
+        回到上面调用的方式(\com\getinstance\util\a::b())冗长的调用方式并没有比以前得到改善,使用use关键字可以为引入的命名空间起别名，use \com\getinstance\util as alias 如果没有显式的使用别名，默认会是util例如下面的列子。
+        namespace my;
+        use \com\getinstance\util;
+        util\b::a();
+
+        这里如果在my空间也出现b类呢？会出现什么情况
+        namespace my;
+        use \com\getinstance\util;
+        class b{
+
+        }
+        Fatal error: Cannot redeclare class b in E:\wnmp\www\localhost\demon-php\test\my.php on line 2
+        貌似又回到最初的起点了，这里解决的办法是显式起别名。
+        namespace my;
+        use \com\getinstance\util\b as utilB;
+        class b{
+           public function a{
+              utilB::a();
+           }
+        }
+  全局命名空间：
+    对于一些全局空间的php文件可以加上'\'区分和普通的命名空间.(这里还是有个疑问为什么这两个类能共存)
+    //conmmon.php
+    class a{
+      public function b{}
+    }
+
+    namespace demon;
+    require 'common.php';
+    class a{
+      public function b{}
+    }
+
+    a::b();//某命名空间下的类
+    \a::b()//全局类
+  同一文件使用多个命名空间：
+  namespace a{
+    class c {
+      public function a{
+
       }
     }
-    这个地方不得不说一下，刚开始我使用tp5的时候由于对概念不清晰出现的一个小bug：
-    namespace app\console\controller;
-    class b extends think\Controller{}
-    报错之后自己还是很疑惑这怎么可能，然后看公司其他人的代码class b extends \think\Controller{}然后也没多想，就直接改成一样bug就解决了，当时也没仔细想这个问题，现在突然发现工作中的任何一个bug都是自己没有掌握的一个知识点，看来以后还是要多用点心呀。
+  }
+  namespace b{
+    class b {
+      public function a{
 
-    对于一些嵌套比较深的类，我们使用时也是比较麻烦的，\com\getinstance\util\a::b();
-    这里我们可以通过use 关键字引入该命名空间，
-    namespace main;
-    use com\getinstance\util;
-    util\a::b();
-    当使用use关键字导入该命名空间时，会隐式为其使用别名util;
+      }
+    }
+  }
+  //全局命名空间
+  namespace {
+    class b {
+      public function a{
 
-    显示使用别名：use com\getinstance\util\a as ua;
-    对于一些全局空间的php文件可以加上'\'区分和命名空间
-    listeren::a();//某命名空间下的类
-    \listeren::a()//全局类
+      }
+    }  
+  }
+
+  \b::a();
+  b::a();
+
+文件系统模拟包：
+  无论哪种版本的php，我们都可以使用文件目录结构的形式类组织我们的类，然后使用require/require_once/include/include_once来加载包。
+  四种加载方式的区别，require开头的语句相对来说更加安全，当加载出现问题时会停止整个程序，而include则会生成一个警告然后跳过加载文件的过程，继续执行下面的程序。以_once结尾的语句则表示如果此文件加载过了便不再继续加载，这样会更多的消耗系统的资源。选择哪种加载方式还是要根据自己的需求来定。  
+PEAR包：
+  pear只是一种命名风格，简单点它的包命名方式就是 目录_子目录_下级目录_类名，通过这我们根据类名可以很好的找到这个类所在的位置。
+包含路径:
+   这里我学到的感觉也就是在php.ini中可以配置包的路径，把包的目录位置配置作为include_path的值。
+自动加载：
+   自动加载应该是每一个框架都必须设计的内容了，其最基本就是php的__autoload()拦截器，或者spl_autoload_register(),不过个人感觉使用或者的更多一些。至于在注册函数中如何实现自动加载的机制，每种框架再设计的目录结构上的不同可能要有所改变，基本的原理就是找到这个文件然后require进来，至于一些牛逼的框架会在这里做上许多的优化，以提升框架的访问速度和性能，只能说多看几个框架源码就知道了，经验这种东西没办法，慢慢积累喽！
+
+5.2类函数和对象函数
+   这类函数更多的是用在验证方面来避免一些可能存在的风险。php5之后反射api的出现替代了一些类函数的作用但是这类函数使用方便在有些时候成为我们的首要选择，下面是我从php手册找的一些类函数。
+   
+   call_user_method_array — 以参数列表的数组，调用用户方法
+   call_user_method — 对特定对象调用用户方法
+   class_alias — 为一个类创建别名
+   class_exists — 检查类是否已定义
+   get_called_class — 后期静态绑定（"Late Static Binding"）类的名称
+   get_class_methods — 返回由类的方法名组成的数组
+   get_class_vars — 返回由类的默认属性组成的数组
+   get_class — 返回对象的类名
+   get_declared_classes — 返回由已定义类的名字所组成的数组
+   get_declared_interfaces — 返回一个数组包含所有已声明的接口
+   get_declared_traits — 返回所有已定义的 traits 的数组
+   get_object_vars — 返回由对象属性组成的关联数组
+   get_parent_class — 返回对象或类的父类名
+   interface_exists — 检查接口是否已被定义
+   is_a — 如果对象属于该类或该类是此对象的父类则返回 TRUE
+   is_subclass_of — 如果此对象是该类的子类，则返回 TRUE
+   method_exists — 检查类的方法是否存在
+   property_exists — 检查对象或类是否具有该属性
+   trait_exists — 检查指定的 trait 是否存在
