@@ -118,24 +118,62 @@ PEAR包：
    自动加载应该是每一个框架都必须设计的内容了，其最基本就是php的__autoload()拦截器，或者spl_autoload_register(),不过个人感觉使用或者的更多一些。至于在注册函数中如何实现自动加载的机制，每种框架再设计的目录结构上的不同可能要有所改变，基本的原理就是找到这个文件然后require进来，至于一些牛逼的框架会在这里做上许多的优化，以提升框架的访问速度和性能，只能说多看几个框架源码就知道了，经验这种东西没办法，慢慢积累喽！
 
 5.2类函数和对象函数
-   这类函数更多的是用在验证方面来避免一些可能存在的风险。php5之后反射api的出现替代了一些类函数的作用但是这类函数使用方便在有些时候成为我们的首要选择，下面是我从php手册找的一些类函数。
-   
-   call_user_method_array — 以参数列表的数组，调用用户方法
-   call_user_method — 对特定对象调用用户方法
-   class_alias — 为一个类创建别名
-   class_exists — 检查类是否已定义
-   get_called_class — 后期静态绑定（"Late Static Binding"）类的名称
-   get_class_methods — 返回由类的方法名组成的数组
-   get_class_vars — 返回由类的默认属性组成的数组
-   get_class — 返回对象的类名
-   get_declared_classes — 返回由已定义类的名字所组成的数组
-   get_declared_interfaces — 返回一个数组包含所有已声明的接口
-   get_declared_traits — 返回所有已定义的 traits 的数组
-   get_object_vars — 返回由对象属性组成的关联数组
-   get_parent_class — 返回对象或类的父类名
-   interface_exists — 检查接口是否已被定义
-   is_a — 如果对象属于该类或该类是此对象的父类则返回 TRUE
-   is_subclass_of — 如果此对象是该类的子类，则返回 TRUE
-   method_exists — 检查类的方法是否存在
-   property_exists — 检查对象或类是否具有该属性
-   trait_exists — 检查指定的 trait 是否存在
+   这类函数更多的是用在验证方面来避免一些可能存在的风险。php5之后反射api的出现替代了一些类函数的作用但是这类函数使用方便在有些时候成为我们的首要选择，下面是书中介绍的一些常用的类函数，更多的类函数可能需要查看手册。
+   class_exists() 接受一个字符串参数，判断该字符串对应的类是否存在，
+   get_declared_classes() 获得脚本进程中所有累的数组。
+   get_class() 接收对象作为参数，返回对象的类名
+   instanceof 操作符，判断一个对象是否属于该类的家族实例 obj instanceof class
+   get_class_method() 接收字符串作为类名返回该类拥有的方法
+   is_callable($obj/$class,$method);判断该类是否存在方法    
+   method_exists($obj/$class,$method);
+   get_class_vars()以类名参数返回该类的所有属性
+   get_parent_class()返回该类的父类
+   is_subclass_class($obj,$class) 判断该对象是否属于此类的家族，感觉跟instanceof没有太大区别
+   class_implements($class/$obj) 返回所有的接口
+   call_user_func(array($obj,$method))动态调用方法  最终结果类似$obj->$menthod();
+
+<疑惑点> call_user_func_array(array($obj,$method),$args) 可以携带所有的参数进行调用，这里提到比call_user_func()  方法的优势是能够传递一个独立的参数，可是个人还是不确定怎么个情况。
+
+
+5.3 反射api
+    看完反射api的简单介绍和演示，感觉是比普通的类或对象判断要高级很多，特别是能直接获取源码的功能简直吊炸天，可细想一下，这个功能真的有用吗？你怎么加载别人的代码文件，访问别人的api无非通过别人定好的方式来写，在实际项目中没有必要也不太现实去获取别人的源代码。好了还是安心回顾一下主要讲些什么吧！
+    首先ReflectionClass是php内置的类，简单使用,下面调用方法时相应的对象名我省略不写。
+
+    $pro_class = new ReflectionClass('$className');
+    然后就可以使用此类的方法进行验证，
+    get_name()获取类名；
+    isUserDefined()是否定义
+    isInternal() 是否是内置类
+    isInternal() 是否是接口
+    isAbstract()  是否是抽象类
+    isFinal()是否可以被继承
+    isInstantiable()是否可以得到类实例
+
+    检查方法
+    $methods = $pro_class->getMethods();
+    foeach($methods as $method){
+        get_name()
+        isUserDefined()
+        isInternal()
+        isAbstract()
+        isPublic()
+        isProtected()
+        isPrivate()
+        isStatic()
+        inFinal()
+        isConstructor()
+        returnReference()方法返回引用
+    } 
+    检查方法参数
+    $methods = $pro_class->getMethods();
+    foeach($methods as $method){
+        $args = $method->getParameters();
+        foreach($args as $param){
+          getName()
+          getClass()
+          getPosition()
+          isPassedByReference()//是否为引用
+          isDefaultValueAvailable()是否有默认值
+          getDefaultValue();
+        }
+    }
