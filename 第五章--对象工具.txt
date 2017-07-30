@@ -267,3 +267,7 @@ PEAR包：
   $moduleRunner = new ModuleRunner();
   $moduleRunner->init();
   print_r($moduleRunner->module);
+
+  对于常规方法的调用我么使用这种形式$obj->someMethod($argList...);但是因为我们这里使用了反射调用方法的形式变成了这样。$reflectionMethodRef->invoke($reflectionClassRef,$argList...).
+  使用反射时，感觉就是中间多一层类，当你想要实例化一个类时，你必须通过反射类对象的newInstance()方法才能得到一个对象。也正是因为如此我们才可以很方便的调用第三方的插件。
+  更多参照可以阅读此篇博客http://dengbaoleng.iteye.com/blog/1504589。
