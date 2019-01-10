@@ -46,3 +46,9 @@ export default function remoteLoad(url, hasCallback) {
     document.body.removeChild(scriptElement)
   }
 }
+
+
+Promise.all([
+      remoteLoad(D.common_cdn + "/htsplayer/dist/htslplayer.js?v=" + D.ver),
+      remoteLoad("//www.xdysoft.com/helper/wsplayer.js?v=" + D.ver)
+    ]);
